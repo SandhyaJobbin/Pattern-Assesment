@@ -1,320 +1,524 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Pattern Recognition Mini-Game</title>
-<style>
-  :root{
-    --bg:#0f1226;
-    --card:#171a35;
-    --ink:#e8ebff;
-    --muted:#a4a9d9;
-    --accent:#7c6cff;
-    --accent-2:#00e0ad;
-    --bad:#ff5c7a;
-    --good:#11d690;
-    --glow:0 10px 25px rgba(124,108,255,.35);
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;
-    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-    color:var(--ink);
-    background:
-      radial-gradient(1200px 600px at 110% -10%, #2b2f62 0%, transparent 60%),
-      radial-gradient(1200px 700px at -10% 110%, #1e224d 0%, transparent 60%),
-      var(--bg);
-    display:flex; align-items:center; justify-content:center;
-    padding:24px;
-  }
-  .game{
-    width:min(100%, 980px);
-    background:linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.02)) , var(--card);
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:18px;
-    overflow:hidden;
-    box-shadow: var(--glow);
-    position:relative;
-  }
-  header{
-    padding:18px 20px;
-    display:flex; align-items:center; justify-content:space-between;
-    background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0));
-    border-bottom:1px solid rgba(255,255,255,.08);
-  }
-  .brand{display:flex; align-items:center; gap:12px; font-weight:700;}
-  .brand .logo{
-    width:34px; height:34px; border-radius:10px;
-    background:conic-gradient(from 210deg, var(--accent), #9f96ff, var(--accent));
-    animation: spin-slow 12s linear infinite;
-  }
-  .progress-wrap{display:flex; align-items:center; gap:12px;}
-  .progress{width:200px; height:8px; background:rgba(255,255,255,.08); border-radius:99px; overflow:hidden;}
-  .bar{height:100%; width:0%; background:linear-gradient(90deg, var(--accent), #9f96ff); border-radius:99px; transition:width .6s;}
-  .count{color:var(--muted); font-size:14px}
-  main{padding:22px;}
-  .screen{display:none;}
-  .screen.active{display:block; animation: fade-in .5s ease both;}
-  .start{text-align:center; padding:48px 24px 64px;}
-  .title{font-size: clamp(24px, 4vw, 36px); margin:10px 0 8px;}
-  .subtitle{color:var(--muted); margin:0 auto 26px; max-width:680px;}
-  .btn{border:none; cursor:pointer; background:linear-gradient(180deg, #8a7dff, #6c5bff); color:white; padding:14px 20px; border-radius:12px; font-weight:700; box-shadow: var(--glow);}
-  .btn:hover{filter: brightness(1.05);}
-  .btn-ghost{background:transparent; color:var(--muted); border:1px solid rgba(255,255,255,.12);}
-  .card{display:grid; gap:18px; grid-template-columns: 1.1fr 1fr; background:rgba(0,0,0,.12); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:16px;}
-  .prompt{background:rgba(255,255,255,.035); border:1px dashed rgba(255,255,255,.12); border-radius:14px; padding:12px;}
-  .prompt img{width:100%; aspect-ratio: 16/10; object-fit:cover; border-radius:12px;}
-  .choices{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
-  .choice{position:relative; border-radius:12px; overflow:hidden; cursor:pointer; border:1px solid rgba(255,255,255,.08);}
-  .choice img{width:100%; aspect-ratio: 16/10; object-fit:cover;}
-  .choice .label{position:absolute; top:8px; left:8px; background:rgba(0,0,0,.45); padding:6px 8px; border-radius:8px; color:#fff;}
-  .choice.correct{outline:2px solid var(--good);}
-  .choice.wrong{outline:2px solid var(--bad);}
-  .feedback{margin-top:12px; padding:14px; border-radius:12px; background:rgba(17,214,144,.07); border:1px solid rgba(17,214,144,.25); display:none;}
-  .feedback.show{display:block;}
-  .controls{margin-top:16px; display:flex; gap:10px; justify-content:flex-end;}
-  .score{text-align:center; padding:48px 24px 58px;}
-  .score .big{font-size: clamp(42px, 7vw, 72px); margin:12px 0 6px; background: linear-gradient(90deg, #fff, #bfbaff); -webkit-background-clip:text; color:transparent;}
-  .score .badge{display:inline-block; margin:10px 0 20px; padding:6px 10px; border-radius:999px; font-size:13px; font-weight:800; background:linear-gradient(180deg, #a6ffe6, #00e0ad);}
-  @keyframes spin-slow{to{transform: rotate(360deg);}}
-  @keyframes fade-in{from{opacity:0} to{opacity:1}}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pattern Recognition Mini-Game</title>
+  <style>
+    :root {
+      --bg: #0f1226;
+      --card: #171a35;
+      --ink: #e8ebff;
+      --muted: #a4a9d9;
+      --accent: #7c6cff;
+      --accent-2: #00e0ad;
+      --bad: #ff5c7a;
+      --good: #11d690;
+      --glow: 0 10px 25px rgba(124, 108, 255, .35);
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html,
+    body {
+      height: 100%
+    }
+
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 600px at 110% -10%, #2b2f62 0%, transparent 60%),
+        radial-gradient(1200px 700px at -10% 110%, #1e224d 0%, transparent 60%),
+        var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .game {
+      width: min(100%, 980px);
+      background: linear-gradient(180deg, rgba(255, 255, 255, .035), rgba(255, 255, 255, .02)), var(--card);
+      border: 1px solid rgba(255, 255, 255, .08);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: var(--glow);
+      position: relative;
+    }
+
+    header {
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, 0));
+      border-bottom: 1px solid rgba(255, 255, 255, .08);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+    }
+
+    .brand .logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: conic-gradient(from 210deg, var(--accent), #9f96ff, var(--accent));
+      animation: spin-slow 12s linear infinite;
+    }
+
+    .progress-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .progress {
+      width: 200px;
+      height: 8px;
+      background: rgba(255, 255, 255, .08);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), #9f96ff);
+      border-radius: 99px;
+      transition: width .6s;
+    }
+
+    .count {
+      color: var(--muted);
+      font-size: 14px
+    }
+
+    main {
+      padding: 22px;
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+      animation: fade-in .5s ease both;
+    }
+
+    .start {
+      text-align: center;
+      padding: 48px 24px 64px;
+    }
+
+    .title {
+      font-size: clamp(24px, 4vw, 36px);
+      margin: 10px 0 8px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin: 0 auto 26px;
+      max-width: 680px;
+    }
+
+    .btn {
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(180deg, #8a7dff, #6c5bff);
+      color: white;
+      padding: 14px 20px;
+      border-radius: 12px;
+      font-weight: 700;
+      box-shadow: var(--glow);
+    }
+
+    .btn:hover {
+      filter: brightness(1.05);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid rgba(255, 255, 255, .12);
+    }
+
+    .card {
+      display: grid;
+      gap: 18px;
+      grid-template-columns: 1.1fr 1fr;
+      background: rgba(0, 0, 0, .12);
+      border: 1px solid rgba(255, 255, 255, .08);
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .prompt {
+      background: rgba(255, 255, 255, .035);
+      border: 1px dashed rgba(255, 255, 255, .12);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .prompt img {
+      width: auto;
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      border-radius: 12px;
+      margin-top: 10px;
+      /* Adjust spacing as needed */
+    }
+
+    .choices {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .choice {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, .08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .choice img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+    }
+
+    .choice .label {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(0, 0, 0, .45);
+      padding: 6px 8px;
+      border-radius: 8px;
+      color: #fff;
+    }
+
+    .choice.correct {
+      outline: 2px solid var(--good);
+    }
+
+    .choice.wrong {
+      outline: 2px solid var(--bad);
+    }
+
+    .feedback {
+      margin-top: 12px;
+      padding: 14px;
+      border-radius: 12px;
+      background: rgba(17, 214, 144, .07);
+      border: 1px solid rgba(17, 214, 144, .25);
+      display: none;
+    }
+
+    .feedback.show {
+      display: block;
+    }
+
+    .controls {
+      margin-top: 16px;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .score {
+      text-align: center;
+      padding: 48px 24px 58px;
+    }
+
+    .score .big {
+      font-size: clamp(42px, 7vw, 72px);
+      margin: 12px 0 6px;
+      background: linear-gradient(90deg, #fff, #bfbaff);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .score .badge {
+      display: inline-block;
+      margin: 10px 0 20px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 800;
+      background: linear-gradient(180deg, #a6ffe6, #00e0ad);
+    }
+
+    @keyframes spin-slow {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes fade-in {
+      from {
+        opacity: 0
+      }
+
+      to {
+        opacity: 1
+      }
+    }
+  </style>
 </head>
+
 <body>
-<div class="game">
-  <header>
-    <div class="brand"><div class="logo"></div><span>Pattern Quest</span></div>
-    <div class="progress-wrap">
-      <div class="progress"><div class="bar" id="progressBar"></div></div>
-      <div class="count"><span id="qNum">0</span>/2</div>
-    </div>
-  </header>
-
-  <!-- Start Screen -->
-  <section class="screen start active" id="startScreen">
-    <h1 class="title">Sharpen your pattern sense</h1>
-    <p class="subtitle">See a pattern image and four possible matches. Pick the best fit and learn why.</p>
-    <button class="btn" id="startBtn">Start</button>
-  </section>
-
-  <!-- Question Screen -->
-  <section class="screen" id="quizScreen">
-    <div class="card">
-      <div class="prompt">
-        <h3 id="promptTitle">Question</h3>
-        <img id="promptImg" src="" alt="Pattern prompt" />
+  <div class="game">
+    <header>
+      <div class="brand">
+        <div class="logo"></div><span>Pattern Quest</span>
       </div>
-      <div>
-        <div class="choices" id="choices"></div>
-        <div class="feedback" id="feedback">
-          <h4 id="fbTitle">Explanation</h4>
-          <p id="fbText"></p>
+      <div class="progress-wrap">
+        <div class="progress">
+          <div class="bar" id="progressBar"></div>
         </div>
-        <div class="controls">
-          <button class="btn-ghost" id="skipBtn">Skip</button>
-          <button class="btn" id="nextBtn" disabled>Next</button>
+        <div class="count"><span id="qNum">0</span>/2</div>
+      </div>
+    </header>
+
+    <section class="screen start active" id="startScreen">
+      <h1 class="title">Sharpen your pattern sense</h1>
+      <p class="subtitle">See a pattern image and four possible matches. Pick the best fit and learn why.</p>
+      <button class="btn" id="startBtn">Start</button>
+    </section>
+
+    <section class="screen" id="quizScreen">
+      <div class="card">
+        <div class="prompt">
+          <h3 id="promptTitle">Question</h3>
+          <img id="promptImg" src="" alt="Pattern prompt" />
+        </div>
+        <div>
+          <div class="choices" id="choices"></div>
+          <div class="feedback" id="feedback">
+            <h4 id="fbTitle">Explanation</h4>
+            <p id="fbText"></p>
+          </div>
+          <div class="controls">
+            <button class="btn-ghost" id="skipBtn">Skip</button>
+            <button class="btn" id="nextBtn" disabled>Next</button>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Score Screen -->
-  <section class="screen score" id="scoreScreen">
-    <div class="badge" id="scoreBadge">Nice run</div>
-    <div class="big" id="finalScore">0 / 2</div>
-    <p id="scoreMsg">Message</p>
-    <div style="margin-top:18px;">
-      <button class="btn" id="retryBtn">Play again</button>
-    </div>
-  </section>
-</div>
+    <section class="screen score" id="scoreScreen">
+      <div class="badge" id="scoreBadge">Nice run</div>
+      <div class="big" id="finalScore">0 / 2</div>
+      <p id="scoreMsg">Message</p>
+      <div style="margin-top:18px;">
+        <button class="btn" id="retryBtn">Play again</button>
+      </div>
+    </section>
+  </div>
 
-<script>
-const questions = [
-  {
-    title: "Find the piece that continues the pattern",
-    prompt: "Qu1.png",
-    options: [
-      { src: "A1.png", label: "A" },
-      { src: "A2.png", label: "B" },
-      { src: "A3.png", label: "C" },
-            { src: "A4.png", label: "D" }
-    ],
-    correctIndex: 0, // A
-    explanation: "The top-right square is the mirror/rotation of the other patterned quadrants so it must include the diagonal V with the minus on the left, plus on the right, and the little quarter-circle where the central circle cuts into that quadrant. Option A is the only choice with that arc/ sign arrangement."
-  },
-  {
-    title: "Select the shape that best matches the rule",
-    prompt: "Qu2.png",
-    options: [
-      { src: "A5.png", label: "A" },
-      { src: "A6.png", label: "B" },
-      { src: "A7.png", label: "C" },
-      { src: "A8.png", label: "D" }
-    ],
-    correctIndex: 3, // D
-    explanation: "Look at the patterns across the rows and columns. Each square contains a unique combination of symbols and numbers with some repetition and rotation. If you follow the sequence:\n\n- The symbols and numbers rotate positions.\n- No symbol or number repeats in the same row or column.\n- The missing square must complete the sequence.\n\nOption D fits perfectly as it maintains the logical pattern of symbols, numbers, and their positions from the previous squares."
-  }
-];
+  <script>
+    const questions = [
+      {
+        title: "Find the piece that continues the pattern",
+        prompt: "Qu1.png",
+        options: [
+          { src: "A1.png", label: "A" },
+          { src: "A2.png", label: "B" },
+          { src: "A3.png", label: "C" },
+          { src: "A4.png", label: "D" }
+        ],
+        correctIndex: 0, // A
+        explanation: "The top-right square is the mirror/rotation of the other patterned quadrants so it must include the diagonal V with the minus on the left, plus on the right, and the little quarter-circle where the central circle cuts into that quadrant. Option A is the only choice with that arc/ sign arrangement."
+      },
+      {
+        title: "Select the shape that best matches the rule",
+        prompt: "Qu2.png",
+        options: [
+          { src: "A5.png", label: "A" },
+          { src: "A6.png", label: "B" },
+          { src: "A7.png", label: "C" },
+          { src: "A8.png", label: "D" }
+        ],
+        correctIndex: 3, // D
+        explanation: "Look at the patterns across the rows and columns. Each square contains a unique combination of symbols and numbers with some repetition and rotation. If you follow the sequence:\n\n- The symbols and numbers rotate positions.\n- No symbol or number repeats in the same row or column.\n- The missing square must complete the sequence.\n\nOption D fits perfectly as it maintains the logical pattern of symbols, numbers, and their positions from the previous squares."
+      }
+    ];
 
-let current = 0;
-let score = 0;
-let locked = false;
+    let current = 0;
+    let score = 0;
+    let locked = false;
 
-const startScreen = document.getElementById('startScreen');
-const quizScreen  = document.getElementById('quizScreen');
-const scoreScreen = document.getElementById('scoreScreen');
+    const startScreen = document.getElementById('startScreen');
+    const quizScreen = document.getElementById('quizScreen');
+    const scoreScreen = document.getElementById('scoreScreen');
 
-const qNum = document.getElementById('qNum');
-const progressBar = document.getElementById('progressBar');
+    const qNum = document.getElementById('qNum');
+    const progressBar = document.getElementById('progressBar');
 
-const promptTitle = document.getElementById('promptTitle');
-const promptImg   = document.getElementById('promptImg');
-const choicesWrap = document.getElementById('choices');
+    const promptTitle = document.getElementById('promptTitle');
+    const promptImg = document.getElementById('promptImg');
+    const choicesWrap = document.getElementById('choices');
 
-const feedback = document.getElementById('feedback');
-const fbTitle  = document.getElementById('fbTitle');
-const fbText   = document.getElementById('fbText');
+    const feedback = document.getElementById('feedback');
+    const fbTitle = document.getElementById('fbTitle');
+    const fbText = document.getElementById('fbText');
 
-const startBtn = document.getElementById('startBtn');
-const nextBtn  = document.getElementById('nextBtn');
-const skipBtn  = document.getElementById('skipBtn');
+    const startBtn = document.getElementById('startBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const skipBtn = document.getElementById('skipBtn');
 
-const finalScore = document.getElementById('finalScore');
-const scoreBadge = document.getElementById('scoreBadge');
-const scoreMsg   = document.getElementById('scoreMsg');
-const retryBtn   = document.getElementById('retryBtn');
+    const finalScore = document.getElementById('finalScore');
+    const scoreBadge = document.getElementById('scoreBadge');
+    const scoreMsg = document.getElementById('scoreMsg');
+    const retryBtn = document.getElementById('retryBtn');
 
-function showScreen(screen){
-  [startScreen, quizScreen, scoreScreen].forEach(s => s.classList.remove('active'));
-  screen.classList.add('active');
-}
+    function showScreen(screen) {
+      [startScreen, quizScreen, scoreScreen].forEach(s => s.classList.remove('active'));
+      screen.classList.add('active');
+    }
 
-function updateProgress(){
-  qNum.textContent = current + 1;
-  progressBar.style.width = (current / questions.length) * 100 + '%';
-}
+    function updateProgress() {
+      qNum.textContent = current + 1;
+      progressBar.style.width = (current / questions.length) * 100 + '%';
+    }
 
-function renderQuestion(i){
-  const q = questions[i];
-  locked = false;
-  nextBtn.disabled = true;
-  feedback.classList.remove('show');
-  fbText.textContent = '';
-  fbTitle.textContent = 'Explanation';
+    function renderQuestion(i) {
+      const q = questions[i];
+      locked = false;
+      nextBtn.disabled = true;
+      feedback.classList.remove('show');
+      fbText.textContent = '';
+      fbTitle.textContent = 'Explanation';
 
-  promptTitle.textContent = q.title;
-  promptImg.src = q.prompt;
+      promptTitle.textContent = q.title;
+      promptImg.src = q.prompt;
 
-  choicesWrap.innerHTML = '';
-  q.options.forEach((opt, idx) => {
-    const btn = document.createElement('button');
-    btn.className = 'choice';
-    btn.dataset.index = idx;
+      choicesWrap.innerHTML = '';
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'choice';
+        btn.dataset.index = idx;
 
-    const tag = document.createElement('div');
-    tag.className = 'label';
-    tag.textContent = opt.label;
+        const tag = document.createElement('div');
+        tag.className = 'label';
+        tag.textContent = opt.label;
 
-    const img = document.createElement('img');
-    img.src = opt.src;
+        const img = document.createElement('img');
+        img.src = opt.src;
 
-    btn.appendChild(tag);
-    btn.appendChild(img);
-    btn.addEventListener('click', onSelect);
-    choicesWrap.appendChild(btn);
-  });
+        btn.appendChild(tag);
+        btn.appendChild(img);
+        btn.addEventListener('click', onSelect);
+        choicesWrap.appendChild(btn);
+      });
 
-  updateProgress();
-}
+      updateProgress();
+    }
 
-function onSelect(e){
-  if (locked) return;
-  locked = true;
-  const q = questions[current];
-  const chosen = Number(e.currentTarget.dataset.index);
-  const choices = [...document.querySelectorAll('.choice')];
+    function onSelect(e) {
+      if (locked) return;
+      locked = true;
+      const q = questions[current];
+      const chosen = Number(e.currentTarget.dataset.index);
+      const choices = [...document.querySelectorAll('.choice')];
 
-  choices.forEach((c, idx) => {
-    if (idx === q.correctIndex) c.classList.add('correct');
-    if (idx === chosen && chosen !== q.correctIndex) c.classList.add('wrong');
-    c.disabled = true;
-  });
+      choices.forEach((c, idx) => {
+        if (idx === q.correctIndex) c.classList.add('correct');
+        if (idx === chosen && chosen !== q.correctIndex) c.classList.add('wrong');
+        c.disabled = true;
+      });
 
-  if (chosen === q.correctIndex){
-    score++;
-    fbTitle.textContent = 'Correct!';
-  } else {
-    fbTitle.textContent = 'Incorrect';
-  }
-  fbText.textContent = q.explanation;
-  feedback.classList.add('show');
-  nextBtn.disabled = false;
-}
+      if (chosen === q.correctIndex) {
+        score++;
+        fbTitle.textContent = 'Correct!';
+      } else {
+        fbTitle.textContent = 'Incorrect';
+      }
+      fbText.textContent = q.explanation;
+      feedback.classList.add('show');
+      nextBtn.disabled = false;
+    }
 
-function next(){
-  current++;
-  if (current >= questions.length){
-    finish();
-  } else {
-    renderQuestion(current);
-  }
-}
+    function next() {
+      current++;
+      if (current >= questions.length) {
+        finish();
+      } else {
+        renderQuestion(current);
+      }
+    }
 
-function skip(){
-  if (locked) return;
-  const q = questions[current];
-  const choices = [...document.querySelectorAll('.choice')];
-  choices.forEach((c, idx) => {
-    if (idx === q.correctIndex) c.classList.add('correct');
-    c.disabled = true;
-  });
-  fbTitle.textContent = 'Skipped';
-  fbText.textContent = q.explanation;
-  feedback.classList.add('show');
-  nextBtn.disabled = false;
-  locked = true;
-}
+    function skip() {
+      if (locked) return;
+      const q = questions[current];
+      const choices = [...document.querySelectorAll('.choice')];
+      choices.forEach((c, idx) => {
+        if (idx === q.correctIndex) c.classList.add('correct');
+        c.disabled = true;
+      });
+      fbTitle.textContent = 'Skipped';
+      fbText.textContent = q.explanation;
+      feedback.classList.add('show');
+      nextBtn.disabled = false;
+      locked = true;
+    }
 
-function finish(){
-  const total = questions.length;
-  finalScore.textContent = `${score} / ${total}`;
-  const pct = (score / total) * 100;
-  if (pct === 100){
-    scoreBadge.textContent = 'Flawless';
-    scoreMsg.textContent = 'Perfect score! You nailed every pattern.';
-  } else if (pct >= 50){
-    scoreBadge.textContent = 'On track';
-    scoreMsg.textContent = 'Good job! Review explanations to improve further.';
-  } else {
-    scoreBadge.textContent = 'Keep going';
-    scoreMsg.textContent = 'Patterns take practice. Try again!';
-  }
-  showScreen(scoreScreen);
-  progressBar.style.width = '100%';
-  qNum.textContent = total;
-}
+    function finish() {
+      const total = questions.length;
+      finalScore.textContent = `${score} / ${total}`;
+      const pct = (score / total) * 100;
+      if (pct === 100) {
+        scoreBadge.textContent = 'Flawless';
+        scoreMsg.textContent = 'Perfect score! You nailed every pattern.';
+      } else if (pct >= 50) {
+        scoreBadge.textContent = 'On track';
+        scoreMsg.textContent = 'Good job! Review explanations to improve further.';
+      } else {
+        scoreBadge.textContent = 'Keep going';
+        scoreMsg.textContent = 'Patterns take practice. Try again!';
+      }
+      showScreen(scoreScreen);
+      progressBar.style.width = '100%';
+      qNum.textContent = total;
+    }
 
-function reset(){
-  current = 0;
-  score = 0;
-  locked = false;
-  showScreen(startScreen);
-  progressBar.style.width = '0%';
-  qNum.textContent = 0;
-}
+    function reset() {
+      current = 0;
+      score = 0;
+      locked = false;
+      showScreen(startScreen);
+      progressBar.style.width = '0%';
+      qNum.textContent = 0;
+    }
 
-startBtn.addEventListener('click', () => {
-  showScreen(quizScreen);
-  renderQuestion(current);
-});
-nextBtn.addEventListener('click', next);
-skipBtn.addEventListener('click', skip);
-retryBtn.addEventListener('click', reset);
+    startBtn.addEventListener('click', () => {
+      showScreen(quizScreen);
+      renderQuestion(current);
+    });
+    nextBtn.addEventListener('click', next);
+    skipBtn.addEventListener('click', skip);
+    retryBtn.addEventListener('click', reset);
 
-reset();
-</script>
+    reset();
+  </script>
 </body>
+
 </html>
